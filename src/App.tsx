@@ -4,6 +4,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import * as XLSX from "xlsx";
+import { supabase } from "./lib/supabase";
 
 type User = {
   name: string;
@@ -231,17 +232,49 @@ export default function App() {
     setCalendarModal(null);
   };
 
-  const handleAddEmployee = (e: React.FormEvent) => {
-    e.preventDefault();
+ const handleAddEmployee = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (
-      !newEmployeeName.trim() ||
-      !newEmployeeId.trim() ||
-      !newEmployeePassword.trim()
-    ) {
-      alert("Enter employee name, employee ID, and password.");
-      return;
-    }
+  if (
+    !newEmployeeName.trim() ||
+    !newEmployeeId.trim() ||
+    !newEmployeePassword.trim()
+  ) {
+    alert("Enter employee name, ID and password");
+    return;
+  }
+
+  const { error } = await supabase.from("employees").insert({
+    employee_code: newEmployeeId.trim(),
+    name: newEmployeeName.trim(),
+    showroom: newEmployeeShowroom.trim(),
+    password: newEmployeePassword.trim(),
+    role: "Employee",
+  });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  // update UI also
+  setEmployees((prev) => [
+    ...prev,
+    {
+      id: newEmployeeId.trim(),
+      name: newEmployeeName.trim(),
+      showroom: newEmployeeShowroom.trim(),
+      password: newEmployeePassword.trim(),
+    },
+  ]);
+
+  setNewEmployeeName("");
+  setNewEmployeeId("");
+  setNewEmployeePassword("");
+  setNewEmployeeShowroom("");
+
+  alert("Employee saved to database");
+};
 
     const alreadyExists = employees.some(
       (emp) => emp.id.toLowerCase() === newEmployeeId.trim().toLowerCase()
