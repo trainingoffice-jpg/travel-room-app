@@ -44,6 +44,7 @@ type EmployeeRecord = {
   id: string;
   name: string;
   showroom: string;
+  password: string;
 };
 
 type RoomRecord = {
@@ -105,8 +106,8 @@ export default function App() {
   const [activeModule, setActiveModule] = useState<ModuleKey>("travel");
 
   const [employees, setEmployees] = useState<EmployeeRecord[]>([
-    { id: "E001", name: "Yash", showroom: "Chennai" },
-    { id: "E002", name: "Meera", showroom: "Tambaram" },
+    { id: "E001", name: "Yash", showroom: "Chennai", password: "yash123" },
+    { id: "E002", name: "Meera", showroom: "Tambaram", password: "meera123" },
   ]);
 
   const [showroomLocations, setShowroomLocations] = useState<string[]>([
@@ -131,6 +132,7 @@ export default function App() {
 
   const [newEmployeeName, setNewEmployeeName] = useState("");
   const [newEmployeeId, setNewEmployeeId] = useState("");
+  const [newEmployeePassword, setNewEmployeePassword] = useState("");
   const [newEmployeeShowroom, setNewEmployeeShowroom] = useState("");
 
   const [newShowroom, setNewShowroom] = useState("");
@@ -201,23 +203,22 @@ export default function App() {
       return;
     }
 
-    setUser({
-      name: name.trim(),
-      role: "Employee",
-      id: id.trim(),
-    });
+    const matchedEmployee = employees.find(
+      (emp) =>
+        emp.name.trim().toLowerCase() === name.trim().toLowerCase() &&
+        emp.password === id.trim()
+    );
 
-    const exists = employees.some((emp) => emp.id === id.trim());
-    if (!exists) {
-      setEmployees((prev) => [
-        ...prev,
-        {
-          id: id.trim(),
-          name: name.trim(),
-          showroom: "",
-        },
-      ]);
+    if (!matchedEmployee) {
+      setError("Invalid username or password");
+      return;
     }
+
+    setUser({
+      name: matchedEmployee.name,
+      role: "Employee",
+      id: matchedEmployee.id,
+    });
   };
 
   const logout = () => {
@@ -233,8 +234,12 @@ export default function App() {
   const handleAddEmployee = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!newEmployeeName.trim() || !newEmployeeId.trim()) {
-      alert("Enter employee name and employee ID.");
+    if (
+      !newEmployeeName.trim() ||
+      !newEmployeeId.trim() ||
+      !newEmployeePassword.trim()
+    ) {
+      alert("Enter employee name, employee ID, and password.");
       return;
     }
 
@@ -253,11 +258,13 @@ export default function App() {
         id: newEmployeeId.trim(),
         name: newEmployeeName.trim(),
         showroom: newEmployeeShowroom.trim(),
+        password: newEmployeePassword.trim(),
       },
     ]);
 
     setNewEmployeeName("");
     setNewEmployeeId("");
+    setNewEmployeePassword("");
     setNewEmployeeShowroom("");
   };
 
@@ -1274,6 +1281,16 @@ export default function App() {
                   />
                 </Field>
 
+                <Field label="Employee password">
+                  <input
+                    style={styles.input}
+                    value={newEmployeePassword}
+                    onChange={(e) => setNewEmployeePassword(e.target.value)}
+                    placeholder="Enter employee password"
+                    type="password"
+                  />
+                </Field>
+
                 <Field label="Showroom (searchable)">
                   <input
                     list="employee-showrooms"
@@ -1299,13 +1316,20 @@ export default function App() {
 
             <SectionCard title="Employee List">
               <DataTable
-                headers={["Employee Name", "Employee ID", "Showroom", "Actions"]}
+                headers={[
+                  "Employee Name",
+                  "Employee ID",
+                  "Password",
+                  "Showroom",
+                  "Actions",
+                ]}
                 emptyText="No employees found."
               >
                 {employees.map((emp) => (
                   <tr key={emp.id}>
                     <td style={styles.td}>{emp.name}</td>
                     <td style={styles.td}>{emp.id}</td>
+                    <td style={styles.td}>{emp.password}</td>
                     <td style={styles.td}>{emp.showroom || "-"}</td>
                     <td style={styles.td}>
                       <button
