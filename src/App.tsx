@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import html2canvas from "html2canvas";
@@ -90,6 +90,14 @@ type CalendarEventShape = {
   };
 };
 
+type SupabaseEmployeeRow = {
+  employee_code: string;
+  name: string;
+  showroom: string | null;
+  password: string | null;
+  role?: string | null;
+};
+
 const TRAINING_OPTIONS = [
   "Product Training",
   "Sales Training",
@@ -106,10 +114,7 @@ export default function App() {
 
   const [activeModule, setActiveModule] = useState<ModuleKey>("travel");
 
-  const [employees, setEmployees] = useState<EmployeeRecord[]>([
-    { id: "E001", name: "Yash", showroom: "Chennai", password: "yash123" },
-    { id: "E002", name: "Meera", showroom: "Tambaram", password: "meera123" },
-  ]);
+  const [employees, setEmployees] = useState<EmployeeRecord[]>([]);
 
   const [showroomLocations, setShowroomLocations] = useState<string[]>([
     "Chennai",
@@ -172,6 +177,36 @@ export default function App() {
   const travelCalendarRef = useRef<HTMLDivElement | null>(null);
   const roomCalendarRef = useRef<HTMLDivElement | null>(null);
 
+  useEffect(() => {
+    const loadEmployees = async () => {
+      const { data, error } = await supabase
+        .from("employees")
+        .select("employee_code, name, showroom, password, role")
+        .order("name");
+
+      if (error) {
+        console.error("Failed to load employees:", error.message);
+        setEmployees([
+          { id: "E001", name: "Yash", showroom: "Chennai", password: "yash123" },
+          { id: "E002", name: "Meera", showroom: "Tambaram", password: "meera123" },
+        ]);
+        return;
+      }
+
+      const rows = (data ?? []) as SupabaseEmployeeRow[];
+      setEmployees(
+        rows.map((emp) => ({
+          id: emp.employee_code,
+          name: emp.name,
+          showroom: emp.showroom || "",
+          password: emp.password || "",
+        }))
+      );
+    };
+
+    loadEmployees();
+  }, []);
+
   const filteredShowroomOptions = useMemo(() => {
     if (!showroomSearch.trim()) return showroomLocations;
     return showroomLocations.filter((item) =>
@@ -232,49 +267,17 @@ export default function App() {
     setCalendarModal(null);
   };
 
- const handleAddEmployee = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleAddEmployee = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  if (
-    !newEmployeeName.trim() ||
-    !newEmployeeId.trim() ||
-    !newEmployeePassword.trim()
-  ) {
-    alert("Enter employee name, ID and password");
-    return;
-  }
-
-  const { error } = await supabase.from("employees").insert({
-    employee_code: newEmployeeId.trim(),
-    name: newEmployeeName.trim(),
-    showroom: newEmployeeShowroom.trim(),
-    password: newEmployeePassword.trim(),
-    role: "Employee",
-  });
-
-  if (error) {
-    alert(error.message);
-    return;
-  }
-
-  // update UI also
-  setEmployees((prev) => [
-    ...prev,
-    {
-      id: newEmployeeId.trim(),
-      name: newEmployeeName.trim(),
-      showroom: newEmployeeShowroom.trim(),
-      password: newEmployeePassword.trim(),
-    },
-  ]);
-
-  setNewEmployeeName("");
-  setNewEmployeeId("");
-  setNewEmployeePassword("");
-  setNewEmployeeShowroom("");
-
-  alert("Employee saved to database");
-};
+    if (
+      !newEmployeeName.trim() ||
+      !newEmployeeId.trim() ||
+      !newEmployeePassword.trim()
+    ) {
+      alert("Enter employee name, ID and password");
+      return;
+    }
 
     const alreadyExists = employees.some(
       (emp) => emp.id.toLowerCase() === newEmployeeId.trim().toLowerCase()
@@ -282,6 +285,19 @@ export default function App() {
 
     if (alreadyExists) {
       alert("Employee ID already exists.");
+      return;
+    }
+
+    const { error } = await supabase.from("employees").insert({
+      employee_code: newEmployeeId.trim(),
+      name: newEmployeeName.trim(),
+      showroom: newEmployeeShowroom.trim() || null,
+      password: newEmployeePassword.trim(),
+      role: "Employee",
+    });
+
+    if (error) {
+      alert(error.message);
       return;
     }
 
@@ -299,9 +315,21 @@ export default function App() {
     setNewEmployeeId("");
     setNewEmployeePassword("");
     setNewEmployeeShowroom("");
+
+    alert("Employee saved to database");
   };
 
-  const handleDeleteEmployee = (employeeId: string) => {
+  const handleDeleteEmployee = async (employeeId: string) => {
+    const { error } = await supabase
+      .from("employees")
+      .delete()
+      .eq("employee_code", employeeId);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
     setEmployees((prev) => prev.filter((emp) => emp.id !== employeeId));
   };
 
