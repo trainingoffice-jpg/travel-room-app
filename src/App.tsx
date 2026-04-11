@@ -187,22 +187,17 @@ export default function App() {
     e.preventDefault();
     setError("");
 
-    if (!id.trim()) {
-      setError("Enter employee ID");
-      return;
-    }
-
-    if (id.trim() === "admin123") {
+    if (name.trim() === "Rathishthambu" && id.trim() === "landd2026") {
       setUser({
-        name: name.trim() || "Admin",
+        name: "Rathishthambu",
         role: "Admin",
-        id: "admin123",
+        id: "admin",
       });
       return;
     }
 
-    if (!name.trim()) {
-      setError("Enter employee name");
+    if (!name.trim() || !id.trim()) {
+      setError("Enter name and employee ID");
       return;
     }
 
@@ -651,18 +646,19 @@ export default function App() {
       <div style={styles.loginPage}>
         <form onSubmit={login} style={styles.loginCard}>
           <h1 style={styles.loginTitle}>Employee Portal</h1>
-          <p style={styles.loginSub}>Login with name and employee ID</p>
+          <p style={styles.loginSub}>Login with username and password</p>
 
           <input
             style={styles.input}
-            placeholder="Employee name"
+            placeholder="Username"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
 
           <input
             style={styles.input}
-            placeholder='Employee ID or "admin123"'
+            placeholder="Password"
+            type="password"
             value={id}
             onChange={(e) => setId(e.target.value)}
           />
@@ -1771,6 +1767,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: 14,
     boxSizing: "border-box",
     background: "#ffffff",
+    color: "#000000",
   },
   fullRow: {
     gridColumn: "1 / -1",
