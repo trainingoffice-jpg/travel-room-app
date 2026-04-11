@@ -197,7 +197,7 @@ export default function App() {
     }
 
     if (!name.trim() || !id.trim()) {
-      setError("Enter name and employee ID");
+      setError("Enter username and password");
       return;
     }
 
