@@ -930,7 +930,15 @@ useEffect(() => {
       flexDirection: isMobile ? "column": "row",
     }}
   >
-      <aside style={styles.sidebar}>
+      <aside
+  style={{
+    ...styles.sidebar,
+    width: isMobile ? "100%" : 300,
+    minWidth: isMobile ? "100%" : 300,
+    minHeight: isMobile ? "auto" : "100vh",
+    position: isMobile ? "relative" : "sticky",
+  }}
+>
         <div>
           <div style={styles.brandBox}>
             <div style={styles.brandTitle}>Portal</div>
