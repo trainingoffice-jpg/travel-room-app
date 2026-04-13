@@ -2138,11 +2138,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: "100%",
     overflowX: "auto",
   },
-  table: {
-    width: "100%",
-    minWidth: 900,
-    borderCollapse: "collapse",
-  },
+ table: {
+  width: "100%",
+  minWidth: "1000px", // prevents compression
+  borderCollapse: "collapse",
+},
   th: {
     background: "#f1f5ff",
     color: "#123b75",
