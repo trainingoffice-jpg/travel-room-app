@@ -105,14 +105,13 @@ export default function App() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState("");
-
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
-useEffect(() => {
-  const onResize = () => setIsMobile(window.innerWidth < 1024);
-  window.addEventListener("resize", onResize);
-  return () => window.removeEventListener("resize", onResize);
-}, []);
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const [activeModule, setActiveModule] = useState<ModuleKey>("travel");
 
@@ -924,21 +923,21 @@ useEffect(() => {
   }
 
   return (
-   <div
-    style={{
-      ...styles.appShell,
-      flexDirection: isMobile ? "column": "row",
-    }}
-  >
+    <div
+      style={{
+        ...styles.appShell,
+        flexDirection: isMobile ? "column" : "row",
+      }}
+    >
       <aside
-  style={{
-    ...styles.sidebar,
-    width: isMobile ? "100%" : 300,
-    minWidth: isMobile ? "100%" : 300,
-    minHeight: isMobile ? "auto" : "100vh",
-    position: isMobile ? "relative" : "sticky",
-  }}
->
+        style={{
+          ...styles.sidebar,
+          width: isMobile ? "100%" : 300,
+          minWidth: isMobile ? "100%" : 300,
+          minHeight: isMobile ? "auto" : "100vh",
+          position: isMobile ? "relative" : "sticky",
+        }}
+      >
         <div>
           <div style={styles.brandBox}>
             <div style={styles.brandTitle}>Portal</div>
@@ -989,11 +988,11 @@ useEffect(() => {
       </aside>
 
       <main
-  style={{
-    ...styles.main,
-    padding: isMobile ? "16px" : "24px",
-  }}
->
+        style={{
+          ...styles.main,
+          padding: isMobile ? "16px" : "24px",
+        }}
+      >
         {successMessage ? <div style={styles.successBanner}>{successMessage}</div> : null}
 
         {activeModule === "travel" && (
@@ -1143,13 +1142,15 @@ useEffect(() => {
                 {visibleTravelEntries.map((item) => (
                   <tr key={item.id}>
                     <td style={styles.td}>{item.employeeName}</td>
-                    <td style={{ ...styles.td, whiteSpace: "normal" }}>
+                    <td style={{ ...styles.td, whiteSpace: "normal", minWidth: 170 }}>
                       {item.fromDate} to {item.toDate}
                     </td>
                     <td style={styles.td}>{item.purpose}</td>
                     <td style={styles.td}>{item.travelNeeded}</td>
                     <td style={styles.td}>{item.accommodationNeeded}</td>
-                    <td style={styles.td}>{item.showroom || "-"}</td>
+                    <td style={{ ...styles.td, whiteSpace: "normal", minWidth: 140 }}>
+                      {item.showroom || "-"}
+                    </td>
                     <td style={styles.td}>
                       <span
                         style={{
@@ -1410,13 +1411,15 @@ useEffect(() => {
                 {visibleRoomBookings.map((item) => (
                   <tr key={item.id}>
                     <td style={styles.td}>{item.employeeName}</td>
-                    <td style={{ ...styles.td, whiteSpace: "normal" }}>
+                    <td style={{ ...styles.td, whiteSpace: "normal", minWidth: 170 }}>
                       {item.fromDate} to {item.toDate}
                     </td>
                     <td style={styles.td}>{item.room}</td>
                     <td style={styles.td}>{item.trainingType}</td>
                     <td style={styles.td}>{item.remarks || "-"}</td>
-                    <td style={styles.td}>{item.showroom || "-"}</td>
+                    <td style={{ ...styles.td, whiteSpace: "normal", minWidth: 140 }}>
+                      {item.showroom || "-"}
+                    </td>
                     <td style={styles.td}>
                       <span
                         style={{
@@ -1934,6 +1937,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
     boxSizing: "border-box",
   },
+  loginTitle: {
+    margin: 0,
+    color: "#123b75",
+  },
+  loginSub: {
+    margin: "0 0 8px 0",
+    color: "#5d6f8a",
+  },
   successBanner: {
     background: "#dcfce7",
     color: "#166534",
@@ -1946,9 +1957,8 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   appShell: {
     minHeight: "100vh",
-    width: "100%",
     display: "flex",
-    alignItems: "stretch",
+    width: "100%",
     background: "#eef5ff",
     overflowX: "hidden",
   },
@@ -2010,7 +2020,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: "pointer",
     fontWeight: 600,
     fontSize: 14,
-    width: "100%",
   },
   sidebarButtonActive: {
     background: "#ffffff",
@@ -2056,13 +2065,13 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: "100%",
   },
   filterGrid: {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-  gap: "16px",
-  marginBottom: 16,
-  alignItems: "stretch", // FIX
-  width: "100%",
-},
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+    gap: "16px",
+    marginBottom: 16,
+    alignItems: "stretch",
+    width: "100%",
+  },
   fieldWrap: {
     display: "flex",
     flexDirection: "column",
@@ -2111,19 +2120,19 @@ const styles: { [key: string]: React.CSSProperties } = {
     height: "44px",
   },
   secondaryButton: {
-  background: "#ffffff",
-  color: "#1f6feb",
-  border: "1px solid #1f6feb",
-  borderRadius: 10,
-  padding: "10px 16px",
-  cursor: "pointer",
-  fontWeight: 700,
-  width: "100%",
-  height: "44px", // ✅ same as input
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-},
+    background: "#ffffff",
+    color: "#1f6feb",
+    border: "1px solid #1f6feb",
+    borderRadius: 10,
+    padding: "10px 16px",
+    cursor: "pointer",
+    fontWeight: 700,
+    width: "100%",
+    height: "44px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   logoutButton: {
     background: "#ffffff",
     color: "#123b75",
@@ -2138,11 +2147,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: "100%",
     overflowX: "auto",
   },
- table: {
-  width: "100%",
-  minWidth: "1000px", // prevents compression
-  borderCollapse: "collapse",
-},
+  table: {
+    width: "100%",
+    minWidth: 1000,
+    borderCollapse: "collapse",
+  },
   th: {
     background: "#f1f5ff",
     color: "#123b75",
@@ -2154,63 +2163,62 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: 600,
   },
   td: {
-  padding: "14px",
-  borderBottom: "1px solid #eee",
-  color: "#334155",
-  verticalAlign: "middle", // FIX
-  fontSize: 14,
-  textAlign: "center",
-  whiteSpace: "nowrap", // FIX (IMPORTANT)
-},
+    padding: "14px",
+    borderBottom: "1px solid #eee",
+    color: "#334155",
+    verticalAlign: "middle",
+    fontSize: 14,
+    textAlign: "center",
+    whiteSpace: "nowrap",
+  },
   badge: {
-  display: "inline-flex", // FIX
-  alignItems: "center",
-  justifyContent: "center",
-  padding: "6px 12px",
-  borderRadius: 999,
-  fontWeight: 700,
-  fontSize: 12,
-  whiteSpace: "nowrap", // FIX
-},
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "6px 12px",
+    borderRadius: 999,
+    fontWeight: 700,
+    fontSize: 12,
+    whiteSpace: "nowrap",
+  },
   actionWrap: {
-  display: "flex",
-  gap: 8,
-  flexWrap: "nowrap", // FIX
-  justifyContent: "center",
-  alignItems: "center",
-},
+    display: "flex",
+    gap: 8,
+    flexWrap: "nowrap",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   approveButton: {
-  background: "#16a34a",
-  color: "#ffffff",
-  border: "none",
-  borderRadius: 8,
-  padding: "6px 10px",
-  cursor: "pointer",
-  fontSize: 12,
-  whiteSpace: "nowrap",
-},
-
-rejectButton: {
-  background: "#dc2626",
-  color: "#ffffff",
-  border: "none",
-  borderRadius: 8,
-  padding: "6px 10px",
-  cursor: "pointer",
-  fontSize: 12,
-  whiteSpace: "nowrap",
-},
-
-revokeButton: {
-  background: "#f59e0b",
-  color: "#ffffff",
-  border: "none",
-  borderRadius: 8,
-  padding: "6px 10px",
-  cursor: "pointer",
-  fontSize: 12,
-  whiteSpace: "nowrap",
-},
+    background: "#16a34a",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: 8,
+    padding: "6px 10px",
+    cursor: "pointer",
+    fontSize: 12,
+    whiteSpace: "nowrap",
+  },
+  rejectButton: {
+    background: "#dc2626",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: 8,
+    padding: "6px 10px",
+    cursor: "pointer",
+    fontSize: 12,
+    whiteSpace: "nowrap",
+  },
+  revokeButton: {
+    background: "#f59e0b",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: 8,
+    padding: "6px 10px",
+    cursor: "pointer",
+    fontSize: 12,
+    whiteSpace: "nowrap",
+  },
+  legendText: {
     marginTop: 0,
     marginBottom: 14,
     color: "#5d6f8a",
@@ -2275,7 +2283,6 @@ revokeButton: {
     borderRadius: 16,
     padding: 24,
     boxShadow: "0 20px 50px rgba(0,0,0,0.18)",
-    boxSizing: "border-box",
   },
   modalTitle: {
     marginTop: 0,
