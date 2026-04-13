@@ -928,7 +928,7 @@ export default function App() {
     return (
       <div style={styles.loginPage}>
         <form onSubmit={login} style={styles.loginCard}>
-          <h1 style={styles.loginTitle}>Employee Portal</h1>
+          <h1 style={styles.loginTitle}>L&D Planner</h1>
           <p style={styles.loginSub}>Login with username and password</p>
 
           <input
