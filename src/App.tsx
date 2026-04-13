@@ -1938,9 +1938,12 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxSizing: "border-box",
   },
   loginTitle: {
-    margin: 0,
-    color: "#123b75",
-  },
+  margin: 0,
+  color: "#123b75",
+  fontSize: 32,
+  lineHeight: "40px",   // ✅ FIX
+  textAlign: "center",  // optional but clean
+},
   loginSub: {
     margin: "0 0 8px 0",
     color: "#5d6f8a",
