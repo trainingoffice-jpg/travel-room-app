@@ -924,7 +924,12 @@ useEffect(() => {
   }
 
   return (
-    <div style={styles.appShell}>
+   <div
+    style={{
+      ...styles.appShell,
+      flexDirection: isMobile ? "column": "row",
+    }}
+  >
       <aside style={styles.sidebar}>
         <div>
           <div style={styles.brandBox}>
