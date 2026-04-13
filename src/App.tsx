@@ -90,13 +90,26 @@ type CalendarEventShape = {
   };
 };
 
-const TRAINING_OPTIONS = [
-  "Product Training",
-  "Sales Training",
-  "Technical Training",
-  "HR Training",
-  "Others",
-];
+const GOOGLE_SHEETS_WEB_APP_URL =
+  "https://script.google.com/macros/s/AKfycbzbbR4xAa0n5pQ-NYX1xOeE16p7ip28jOFbfB47U_p4LNpZJ-zLe6s1jBzpm0AQKVdp5Q/exec";
+
+async function pushToGoogleSheet(payload: Record<string, string>) {
+  try {
+    const response = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Google Sheets push failed:", error);
+    return { success: false, message: "Google Sheets push failed" };
+  }
+}
 
 export default function App() {
   const [name, setName] = useState("");
@@ -605,6 +618,19 @@ export default function App() {
       return;
     }
 
+    await pushToGoogleSheet({
+      sheetName: "Travel Planner",
+      employeeName: user.name,
+      employeeId: user.id,
+      fromDate: travelFromDate,
+      toDate: travelToDate,
+      purpose: travelPurpose.trim(),
+      showroom: travelShowroom.trim(),
+      travelNeeded,
+      accommodationNeeded,
+      status: "Pending",
+    });
+
     setTravelFromDate("");
     setTravelToDate("");
     setTravelPurpose("");
@@ -620,18 +646,13 @@ export default function App() {
     e.preventDefault();
     if (!user) return;
 
-    if (!roomFromDate || !roomToDate || !selectedRoom || !trainingType) {
-      alert("Fill all room booking fields.");
+    if (!roomFromDate || !roomToDate || !selectedRoom || !trainingType.trim()) {
+      alert("Fill all event planner fields.");
       return;
     }
 
     if (roomToDate < roomFromDate) {
       alert("To date should not be before from date.");
-      return;
-    }
-
-    if (trainingType === "Others" && !roomRemarks.trim()) {
-      alert('Remarks are required when training type is "Others".');
       return;
     }
 
@@ -641,7 +662,7 @@ export default function App() {
       from_date: roomFromDate,
       to_date: roomToDate,
       room: selectedRoom,
-      training_type: trainingType,
+      training_type: trainingType.trim(),
       remarks: roomRemarks.trim() || null,
       showroom: roomShowroom.trim() || null,
       status: "Pending",
@@ -652,6 +673,19 @@ export default function App() {
       return;
     }
 
+    await pushToGoogleSheet({
+      sheetName: "Event Planner",
+      employeeName: user.name,
+      employeeId: user.id,
+      fromDate: roomFromDate,
+      toDate: roomToDate,
+      room: selectedRoom,
+      trainingTopic: trainingType.trim(),
+      remarks: roomRemarks.trim(),
+      showroom: roomShowroom.trim(),
+      status: "Pending",
+    });
+
     setRoomFromDate("");
     setRoomToDate("");
     setSelectedRoom("");
@@ -660,7 +694,7 @@ export default function App() {
     setRoomShowroom("");
 
     await loadAllData(false);
-    showSuccess("Room booking submitted");
+    showSuccess("Event planner submitted");
   };
 
   const visibleTravelEntries = useMemo(() => {
@@ -752,10 +786,10 @@ export default function App() {
             borderColor: colors.border,
             textColor: colors.text,
             extendedProps: {
-              line1: `Purpose: ${entry.purpose}`,
-              line2: `Travel Needed: ${entry.travelNeeded}`,
-              line3: `Accommodation Needed: ${entry.accommodationNeeded}`,
-              line4: `Showroom: ${entry.showroom || "-"}`,
+              line1: `Showroom: ${entry.showroom || "-"}`,
+              line2: `Purpose: ${entry.purpose}`,
+              line3: `Travel Needed: ${entry.travelNeeded}`,
+              line4: `Accommodation Needed: ${entry.accommodationNeeded}`,
               line5: `Range: ${entry.fromDate} to ${entry.toDate}`,
             },
           });
@@ -782,7 +816,7 @@ export default function App() {
 
           events.push({
             id: `room-${entry.id}-${isoDate}`,
-            title: entry.employeeName,
+            title: entry.trainingType,
             start: isoDate,
             allDay: true,
             backgroundColor: colors.bg,
@@ -790,7 +824,7 @@ export default function App() {
             textColor: colors.text,
             extendedProps: {
               line1: `Room: ${entry.room}`,
-              line2: `Training: ${entry.trainingType}`,
+              line2: `Employee: ${entry.employeeName}`,
               line3: `Remarks: ${entry.remarks || "-"}`,
               line4: `Showroom: ${entry.showroom || "-"}`,
               line5: `Range: ${entry.fromDate} to ${entry.toDate}`,
@@ -956,7 +990,7 @@ export default function App() {
               onClick={() => setActiveModule("travel")}
             />
             <SidebarButton
-              label="Room Booking"
+              label="Event Planner"
               active={activeModule === "room"}
               onClick={() => setActiveModule("room")}
             />
@@ -1224,13 +1258,7 @@ export default function App() {
                     <div style={styles.fcEventBox}>
                       <div style={styles.fcTitle}>{info.event.title}</div>
                       <div style={styles.fcLine}>
-                        {String(info.event.extendedProps.line1).replace("Purpose: ", "")}
-                      </div>
-                      <div style={styles.fcLine}>
-                        {String(info.event.extendedProps.line2).replace(
-                          "Travel Needed: ",
-                          ""
-                        )}
+                        {String(info.event.extendedProps.line1).replace("Showroom: ", "")}
                       </div>
                     </div>
                   )}
@@ -1263,7 +1291,7 @@ export default function App() {
 
         {activeModule === "room" && (
           <>
-            <SectionCard title="Room Booking">
+            <SectionCard title="Event Planner">
               {user.role !== "Admin" && (
                 <form onSubmit={handleRoomSubmit} style={styles.formGrid}>
                   <Field label="From date">
@@ -1299,19 +1327,14 @@ export default function App() {
                     </select>
                   </Field>
 
-                  <Field label="Training type">
-                    <select
+                  <Field label="Training Topic">
+                    <input
+                      type="text"
                       style={styles.input}
                       value={trainingType}
                       onChange={(e) => setTrainingType(e.target.value)}
-                    >
-                      <option value="">Select training type</option>
-                      {TRAINING_OPTIONS.map((item) => (
-                        <option key={item} value={item}>
-                          {item}
-                        </option>
-                      ))}
-                    </select>
+                      placeholder="Enter training topic"
+                    />
                   </Field>
 
                   <Field label="Showroom (searchable)">
@@ -1329,7 +1352,7 @@ export default function App() {
                     </datalist>
                   </Field>
 
-                  <Field label={`Remarks ${trainingType === "Others" ? "(Required)" : ""}`}>
+                  <Field label="Remarks">
                     <input
                       type="text"
                       style={styles.input}
@@ -1341,14 +1364,14 @@ export default function App() {
 
                   <div style={styles.fullRow}>
                     <button type="submit" style={styles.primaryButton}>
-                      Submit Room Booking
+                      Submit Event Planner
                     </button>
                   </div>
                 </form>
               )}
             </SectionCard>
 
-            <SectionCard title={user.role === "Admin" ? "All Room Bookings" : "My Room Bookings"}>
+            <SectionCard title={user.role === "Admin" ? "All Event Plans" : "My Event Plans"}>
               <div style={styles.filterGrid}>
                 <Field label="Filter by month">
                   <input
@@ -1400,13 +1423,13 @@ export default function App() {
                   "Employee",
                   "Date Range",
                   "Room",
-                  "Training Type",
+                  "Training Topic",
                   "Remarks",
                   "Showroom",
                   "Status",
                   ...(user.role === "Admin" ? ["Actions"] : []),
                 ]}
-                emptyText="No room bookings found."
+                emptyText="No event planner entries found."
               >
                 {visibleRoomBookings.map((item) => (
                   <tr key={item.id}>
@@ -1460,15 +1483,15 @@ export default function App() {
             </SectionCard>
 
             <SectionCard
-              title="Room Booking Calendar"
+              title="Event Planner Calendar"
               action={
                 <button
                   style={styles.primaryButton}
                   onClick={() =>
                     void downloadCalendarPdf(
                       roomCalendarRef,
-                      "Room Booking",
-                      "room-booking-calendar.pdf"
+                      "Event Planner",
+                      "event-planner-calendar.pdf"
                     )
                   }
                 >
@@ -1477,11 +1500,11 @@ export default function App() {
               }
             >
               <p style={styles.legendText}>
-                Only approved room bookings appear in the calendar.
+                Only approved event planner entries appear in the calendar.
               </p>
 
               <div ref={roomCalendarRef} style={styles.calendarExportBox}>
-                <div style={styles.exportTitle}>Room Booking</div>
+                <div style={styles.exportTitle}>Event Planner</div>
                 <FullCalendar
                   plugins={[dayGridPlugin]}
                   initialView="dayGridMonth"
@@ -1492,9 +1515,6 @@ export default function App() {
                       <div style={styles.fcTitle}>{info.event.title}</div>
                       <div style={styles.fcLine}>
                         {String(info.event.extendedProps.line1).replace("Room: ", "")}
-                      </div>
-                      <div style={styles.fcLine}>
-                        {String(info.event.extendedProps.line2).replace("Training: ", "")}
                       </div>
                     </div>
                   )}
@@ -1926,29 +1946,25 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxSizing: "border-box",
   },
   loginCard: {
-  width: "100%",
-  maxWidth: 420,
-  background: "#ffffff",
-  borderRadius: 20,
-  padding: 28,
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
-  alignItems: "center", // ✅ ADD
-},
+    width: "100%",
+    maxWidth: 420,
+    background: "#ffffff",
+    borderRadius: 20,
+    padding: 28,
+    display: "flex",
+    flexDirection: "column",
+    gap: 14,
+    boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
+    boxSizing: "border-box",
+  },
   loginTitle: {
-  margin: 0,
-  color: "#123b75",
-  fontSize: 32,
-  lineHeight: "40px",   // ✅ FIX
-  textAlign: "center",  // optional but clean
-},
+    margin: 0,
+    color: "#123b75",
+  },
   loginSub: {
-  margin: "8px 0 16px 0", // better spacing
-  color: "#5d6f8a",
-  textAlign: "center",
-},
+    margin: "0 0 8px 0",
+    color: "#5d6f8a",
+  },
   successBanner: {
     background: "#dcfce7",
     color: "#166534",
