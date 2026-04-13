@@ -2163,12 +2163,15 @@ const styles: { [key: string]: React.CSSProperties } = {
   whiteSpace: "nowrap", // FIX (IMPORTANT)
 },
   badge: {
-    display: "inline-block",
-    padding: "4px 10px",
-    borderRadius: 999,
-    fontWeight: 700,
-    fontSize: 12,
-  },
+  display: "inline-flex", // FIX
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "6px 12px",
+  borderRadius: 999,
+  fontWeight: 700,
+  fontSize: 12,
+  whiteSpace: "nowrap", // FIX
+},
   actionWrap: {
     display: "flex",
     gap: 8,
