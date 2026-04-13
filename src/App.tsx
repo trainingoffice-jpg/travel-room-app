@@ -90,14 +90,6 @@ type CalendarEventShape = {
   };
 };
 
-type SupabaseEmployeeRow = {
-  employee_code: string;
-  name: string;
-  showroom: string | null;
-  password: string | null;
-  role?: string | null;
-};
-
 const TRAINING_OPTIONS = [
   "Product Training",
   "Sales Training",
@@ -111,30 +103,13 @@ export default function App() {
   const [id, setId] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   const [activeModule, setActiveModule] = useState<ModuleKey>("travel");
 
   const [employees, setEmployees] = useState<EmployeeRecord[]>([]);
-
-  const [showroomLocations, setShowroomLocations] = useState<string[]>([
-    "Chennai",
-    "Tambaram",
-    "Coats Road",
-    "Usman Road",
-    "Bangalore",
-    "Hyderabad",
-    "Mayavaram",
-  ]);
-
-  const [rooms, setRooms] = useState<RoomRecord[]>([
-    { id: "R001", name: "POD1" },
-    { id: "R002", name: "POD2" },
-    { id: "R003", name: "L&T Room 1" },
-    { id: "R004", name: "L&T Room 2" },
-    { id: "R005", name: "Bangalore Hub" },
-    { id: "R006", name: "Hyderabad Hub" },
-    { id: "R007", name: "Mayavaram Hub" },
-  ]);
+  const [showroomLocations, setShowroomLocations] = useState<string[]>([]);
+  const [rooms, setRooms] = useState<RoomRecord[]>([]);
 
   const [newEmployeeName, setNewEmployeeName] = useState("");
   const [newEmployeeId, setNewEmployeeId] = useState("");
@@ -177,23 +152,29 @@ export default function App() {
   const travelCalendarRef = useRef<HTMLDivElement | null>(null);
   const roomCalendarRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    const loadEmployees = async () => {
-      const { data, error } = await supabase
+  const loadAllData = async () => {
+    setIsLoading(true);
+
+    const [employeesRes, showroomsRes, roomsRes, travelRes, bookingsRes] = await Promise.all([
+      supabase
         .from("employees")
         .select("employee_code, name, showroom, password, role")
-        .order("name");
+        .order("name"),
+      supabase.from("showrooms").select("id, name").order("name"),
+      supabase.from("rooms").select("id, name").order("name"),
+      supabase.from("travel_requests").select("*").order("id", { ascending: false }),
+      supabase.from("room_bookings").select("*").order("id", { ascending: false }),
+    ]);
 
-      if (error) {
-        console.error("Failed to load employees:", error.message);
-        setEmployees([
-          { id: "E001", name: "Yash", showroom: "Chennai", password: "yash123" },
-          { id: "E002", name: "Meera", showroom: "Tambaram", password: "meera123" },
-        ]);
-        return;
-      }
-
-      const rows = (data ?? []) as SupabaseEmployeeRow[];
+    if (employeesRes.error) {
+      console.error("employees load error", employeesRes.error.message);
+    } else {
+      const rows = (employeesRes.data ?? []) as Array<{
+        employee_code: string;
+        name: string;
+        showroom: string | null;
+        password: string | null;
+      }>;
       setEmployees(
         rows.map((emp) => ({
           id: emp.employee_code,
@@ -202,9 +183,94 @@ export default function App() {
           password: emp.password || "",
         }))
       );
-    };
+    }
 
-    loadEmployees();
+    if (showroomsRes.error) {
+      console.error("showrooms load error", showroomsRes.error.message);
+    } else {
+      const rows = (showroomsRes.data ?? []) as Array<{ id: number; name: string }>;
+      setShowroomLocations(rows.map((row) => row.name));
+    }
+
+    if (roomsRes.error) {
+      console.error("rooms load error", roomsRes.error.message);
+    } else {
+      const rows = (roomsRes.data ?? []) as Array<{ id: number; name: string }>;
+      setRooms(
+        rows.map((row) => ({
+          id: String(row.id),
+          name: row.name,
+        }))
+      );
+    }
+
+    if (travelRes.error) {
+      console.error("travel load error", travelRes.error.message);
+    } else {
+      const rows = (travelRes.data ?? []) as Array<{
+        id: number;
+        employee_name: string;
+        employee_id: string;
+        from_date: string;
+        to_date: string;
+        purpose: string;
+        showroom: string | null;
+        travel_needed: boolean;
+        accommodation_needed: boolean;
+        status: TravelStatus;
+      }>;
+      setTravelEntries(
+        rows.map((row) => ({
+          id: row.id,
+          employeeName: row.employee_name,
+          employeeId: row.employee_id,
+          fromDate: row.from_date,
+          toDate: row.to_date,
+          purpose: row.purpose,
+          showroom: row.showroom || "",
+          travelNeeded: row.travel_needed ? "Yes" : "No",
+          accommodationNeeded: row.accommodation_needed ? "Yes" : "No",
+          status: row.status,
+        }))
+      );
+    }
+
+    if (bookingsRes.error) {
+      console.error("room bookings load error", bookingsRes.error.message);
+    } else {
+      const rows = (bookingsRes.data ?? []) as Array<{
+        id: number;
+        employee_name: string;
+        employee_id: string;
+        from_date: string;
+        to_date: string;
+        room: string;
+        training_type: string;
+        remarks: string | null;
+        showroom: string | null;
+        status: RoomStatus;
+      }>;
+      setRoomBookings(
+        rows.map((row) => ({
+          id: row.id,
+          employeeName: row.employee_name,
+          employeeId: row.employee_id,
+          fromDate: row.from_date,
+          toDate: row.to_date,
+          room: row.room,
+          trainingType: row.training_type,
+          remarks: row.remarks || "",
+          showroom: row.showroom || "",
+          status: row.status,
+        }))
+      );
+    }
+
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    void loadAllData();
   }, []);
 
   const filteredShowroomOptions = useMemo(() => {
@@ -288,7 +354,7 @@ export default function App() {
       return;
     }
 
-    const { error } = await supabase.from("employees").insert({
+    const { error: insertError } = await supabase.from("employees").insert({
       employee_code: newEmployeeId.trim(),
       name: newEmployeeName.trim(),
       showroom: newEmployeeShowroom.trim() || null,
@@ -296,44 +362,35 @@ export default function App() {
       role: "Employee",
     });
 
-    if (error) {
-      alert(error.message);
+    if (insertError) {
+      alert(insertError.message);
       return;
     }
-
-    setEmployees((prev) => [
-      ...prev,
-      {
-        id: newEmployeeId.trim(),
-        name: newEmployeeName.trim(),
-        showroom: newEmployeeShowroom.trim(),
-        password: newEmployeePassword.trim(),
-      },
-    ]);
 
     setNewEmployeeName("");
     setNewEmployeeId("");
     setNewEmployeePassword("");
     setNewEmployeeShowroom("");
 
+    await loadAllData();
     alert("Employee saved to database");
   };
 
   const handleDeleteEmployee = async (employeeId: string) => {
-    const { error } = await supabase
+    const { error: deleteError } = await supabase
       .from("employees")
       .delete()
       .eq("employee_code", employeeId);
 
-    if (error) {
-      alert(error.message);
+    if (deleteError) {
+      alert(deleteError.message);
       return;
     }
 
-    setEmployees((prev) => prev.filter((emp) => emp.id !== employeeId));
+    await loadAllData();
   };
 
-  const handleAddShowroom = (e: React.FormEvent) => {
+  const handleAddShowroom = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!newShowroom.trim()) {
@@ -350,15 +407,35 @@ export default function App() {
       return;
     }
 
-    setShowroomLocations((prev) => [...prev, newShowroom.trim()]);
+    const { error: insertError } = await supabase.from("showrooms").insert({
+      name: newShowroom.trim(),
+    });
+
+    if (insertError) {
+      alert(insertError.message);
+      return;
+    }
+
     setNewShowroom("");
+    await loadAllData();
+    alert("Showroom saved to database.");
   };
 
-  const handleDeleteShowroom = (showroom: string) => {
-    setShowroomLocations((prev) => prev.filter((item) => item !== showroom));
+  const handleDeleteShowroom = async (showroom: string) => {
+    const { error: deleteError } = await supabase
+      .from("showrooms")
+      .delete()
+      .eq("name", showroom);
+
+    if (deleteError) {
+      alert(deleteError.message);
+      return;
+    }
+
+    await loadAllData();
   };
 
-  const handleAddRoom = (e: React.FormEvent) => {
+  const handleAddRoom = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!newRoomName.trim()) {
@@ -375,28 +452,44 @@ export default function App() {
       return;
     }
 
-    setRooms((prev) => [
-      ...prev,
-      {
-        id: `R${Date.now()}`,
-        name: newRoomName.trim(),
-      },
-    ]);
+    const { error: insertError } = await supabase.from("rooms").insert({
+      name: newRoomName.trim(),
+    });
+
+    if (insertError) {
+      alert(insertError.message);
+      return;
+    }
 
     setNewRoomName("");
+    await loadAllData();
+    alert("Room saved to database.");
   };
 
-  const handleDeleteRoom = (roomId: string) => {
-    setRooms((prev) => prev.filter((room) => room.id !== roomId));
+  const handleDeleteRoom = async (roomId: string) => {
+    const roomToDelete = rooms.find((room) => room.id === roomId);
+    if (!roomToDelete) return;
+
+    const { error: deleteError } = await supabase
+      .from("rooms")
+      .delete()
+      .eq("name", roomToDelete.name);
+
+    if (deleteError) {
+      alert(deleteError.message);
+      return;
+    }
+
+    await loadAllData();
   };
 
-  const handleShowroomExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleShowroomExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
 
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       const data = event.target?.result;
       if (!data) return;
 
@@ -421,19 +514,34 @@ export default function App() {
         }
       });
 
-      const merged = Array.from(
-        new Set([...showroomLocations, ...uploadedValues].map((item) => item.trim()))
-      ).filter(Boolean);
+      if (uploadedValues.length === 0) {
+        alert("No showroom values found in the Excel file.");
+        return;
+      }
 
-      setShowroomLocations(merged);
-      alert(`Uploaded ${uploadedValues.length} showroom location(s).`);
+      const uniqueValues = Array.from(new Set(uploadedValues));
+
+      const { error: upsertError } = await supabase
+        .from("showrooms")
+        .upsert(uniqueValues.map((nameValue) => ({ name: nameValue })), {
+          onConflict: "name",
+          ignoreDuplicates: true,
+        });
+
+      if (upsertError) {
+        alert(upsertError.message);
+        return;
+      }
+
+      await loadAllData();
+      alert(`Uploaded ${uniqueValues.length} showroom location(s) to database.`);
     };
 
     reader.readAsArrayBuffer(file);
     e.target.value = "";
   };
 
-  const handleTravelSubmit = (e: React.FormEvent) => {
+  const handleTravelSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
@@ -447,21 +555,22 @@ export default function App() {
       return;
     }
 
-    setTravelEntries((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        employeeName: user.name,
-        employeeId: user.id,
-        fromDate: travelFromDate,
-        toDate: travelToDate,
-        purpose: travelPurpose.trim(),
-        showroom: travelShowroom.trim(),
-        travelNeeded,
-        accommodationNeeded,
-        status: "Pending",
-      },
-    ]);
+    const { error: insertError } = await supabase.from("travel_requests").insert({
+      employee_name: user.name,
+      employee_id: user.id,
+      from_date: travelFromDate,
+      to_date: travelToDate,
+      purpose: travelPurpose.trim(),
+      showroom: travelShowroom.trim() || null,
+      travel_needed: travelNeeded === "Yes",
+      accommodation_needed: accommodationNeeded === "Yes",
+      status: "Pending",
+    });
+
+    if (insertError) {
+      alert(insertError.message);
+      return;
+    }
 
     setTravelFromDate("");
     setTravelToDate("");
@@ -469,9 +578,12 @@ export default function App() {
     setTravelShowroom("");
     setTravelNeeded("Yes");
     setAccommodationNeeded("No");
+
+    await loadAllData();
+    alert("Travel request submitted for admin approval.");
   };
 
-  const handleRoomSubmit = (e: React.FormEvent) => {
+  const handleRoomSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
@@ -490,21 +602,22 @@ export default function App() {
       return;
     }
 
-    setRoomBookings((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        employeeName: user.name,
-        employeeId: user.id,
-        fromDate: roomFromDate,
-        toDate: roomToDate,
-        room: selectedRoom,
-        trainingType,
-        remarks: roomRemarks.trim(),
-        showroom: roomShowroom.trim(),
-        status: "Pending",
-      },
-    ]);
+    const { error: insertError } = await supabase.from("room_bookings").insert({
+      employee_name: user.name,
+      employee_id: user.id,
+      from_date: roomFromDate,
+      to_date: roomToDate,
+      room: selectedRoom,
+      training_type: trainingType,
+      remarks: roomRemarks.trim() || null,
+      showroom: roomShowroom.trim() || null,
+      status: "Pending",
+    });
+
+    if (insertError) {
+      alert(insertError.message);
+      return;
+    }
 
     setRoomFromDate("");
     setRoomToDate("");
@@ -512,6 +625,9 @@ export default function App() {
     setTrainingType("");
     setRoomRemarks("");
     setRoomShowroom("");
+
+    await loadAllData();
+    alert("Room booking submitted for admin approval.");
   };
 
   const visibleTravelEntries = useMemo(() => {
@@ -655,15 +771,35 @@ export default function App() {
     return events;
   }, [visibleRoomBookings]);
 
-  const updateTravelStatus = (id: number, status: TravelStatus) => {
+  const updateTravelStatus = async (entryId: number, status: TravelStatus) => {
+    const { error: updateError } = await supabase
+      .from("travel_requests")
+      .update({ status })
+      .eq("id", entryId);
+
+    if (updateError) {
+      alert(updateError.message);
+      return;
+    }
+
     setTravelEntries((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, status } : item))
+      prev.map((item) => (item.id === entryId ? { ...item, status } : item))
     );
   };
 
-  const updateRoomStatus = (id: number, status: RoomStatus) => {
+  const updateRoomStatus = async (entryId: number, status: RoomStatus) => {
+    const { error: updateError } = await supabase
+      .from("room_bookings")
+      .update({ status })
+      .eq("id", entryId);
+
+    if (updateError) {
+      alert(updateError.message);
+      return;
+    }
+
     setRoomBookings((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, status } : item))
+      prev.map((item) => (item.id === entryId ? { ...item, status } : item))
     );
   };
 
@@ -690,10 +826,9 @@ export default function App() {
     const pageWidth = 297;
     const pageHeight = 210;
     const margin = 10;
-    const titleY = 12;
 
     pdf.setFontSize(16);
-    pdf.text(title, margin, titleY);
+    pdf.text(title, margin, 12);
 
     const usableWidth = pageWidth - margin * 2;
     const usableHeight = pageHeight - 24;
@@ -708,6 +843,17 @@ export default function App() {
     pdf.addImage(imgData, "PNG", margin, 18, imgWidth, imgHeight);
     pdf.save(fileName);
   };
+
+  if (isLoading) {
+    return (
+      <div style={styles.loginPage}>
+        <div style={styles.loginCard}>
+          <h1 style={styles.loginTitle}>Loading...</h1>
+          <p style={styles.loginSub}>Please wait</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -963,20 +1109,20 @@ export default function App() {
                         <div style={styles.actionWrap}>
                           <button
                             style={styles.approveButton}
-                            onClick={() => updateTravelStatus(item.id, "Approved")}
+                            onClick={() => void updateTravelStatus(item.id, "Approved")}
                           >
                             Approve
                           </button>
                           <button
                             style={styles.rejectButton}
-                            onClick={() => updateTravelStatus(item.id, "Rejected")}
+                            onClick={() => void updateTravelStatus(item.id, "Rejected")}
                           >
                             Reject
                           </button>
                           {item.status === "Approved" && (
                             <button
                               style={styles.revokeButton}
-                              onClick={() => updateTravelStatus(item.id, "Pending")}
+                              onClick={() => void updateTravelStatus(item.id, "Pending")}
                             >
                               Revoke
                             </button>
@@ -995,7 +1141,7 @@ export default function App() {
                 <button
                   style={styles.primaryButton}
                   onClick={() =>
-                    downloadCalendarPdf(
+                    void downloadCalendarPdf(
                       travelCalendarRef,
                       "Travel Calendar",
                       "travel-calendar.pdf"
@@ -1230,19 +1376,19 @@ export default function App() {
                         <div style={styles.actionWrap}>
                           <button
                             style={styles.approveButton}
-                            onClick={() => updateRoomStatus(item.id, "Approved")}
+                            onClick={() => void updateRoomStatus(item.id, "Approved")}
                           >
                             Approve
                           </button>
                           <button
                             style={styles.rejectButton}
-                            onClick={() => updateRoomStatus(item.id, "Rejected")}
+                            onClick={() => void updateRoomStatus(item.id, "Rejected")}
                           >
                             Reject
                           </button>
                           <button
                             style={styles.revokeButton}
-                            onClick={() => updateRoomStatus(item.id, "Pending")}
+                            onClick={() => void updateRoomStatus(item.id, "Pending")}
                           >
                             Revoke
                           </button>
@@ -1260,7 +1406,7 @@ export default function App() {
                 <button
                   style={styles.primaryButton}
                   onClick={() =>
-                    downloadCalendarPdf(
+                    void downloadCalendarPdf(
                       roomCalendarRef,
                       "Room Booking",
                       "room-booking-calendar.pdf"
@@ -1395,7 +1541,7 @@ export default function App() {
                     <td style={styles.td}>
                       <button
                         style={styles.rejectButton}
-                        onClick={() => handleDeleteEmployee(emp.id)}
+                        onClick={() => void handleDeleteEmployee(emp.id)}
                       >
                         Delete
                       </button>
@@ -1457,7 +1603,7 @@ export default function App() {
                     <td style={styles.td}>
                       <button
                         style={styles.rejectButton}
-                        onClick={() => handleDeleteShowroom(item)}
+                        onClick={() => void handleDeleteShowroom(item)}
                       >
                         Delete
                       </button>
@@ -1510,7 +1656,7 @@ export default function App() {
                     <td style={styles.td}>
                       <button
                         style={styles.rejectButton}
-                        onClick={() => handleDeleteRoom(room.id)}
+                        onClick={() => void handleDeleteRoom(room.id)}
                       >
                         Delete
                       </button>
