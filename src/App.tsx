@@ -1926,17 +1926,17 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxSizing: "border-box",
   },
   loginCard: {
-    width: "100%",
-    maxWidth: 420,
-    background: "#ffffff",
-    borderRadius: 20,
-    padding: 28,
-    display: "flex",
-    flexDirection: "column",
-    gap: 14,
-    boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
-    boxSizing: "border-box",
-  },
+  width: "100%",
+  maxWidth: 420,
+  background: "#ffffff",
+  borderRadius: 20,
+  padding: 28,
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
+  alignItems: "center", // ✅ ADD
+},
   loginTitle: {
   margin: 0,
   color: "#123b75",
@@ -1945,9 +1945,10 @@ const styles: { [key: string]: React.CSSProperties } = {
   textAlign: "center",  // optional but clean
 },
   loginSub: {
-    margin: "0 0 8px 0",
-    color: "#5d6f8a",
-  },
+  margin: "8px 0 16px 0", // better spacing
+  color: "#5d6f8a",
+  textAlign: "center",
+},
   successBanner: {
     background: "#dcfce7",
     color: "#166534",
