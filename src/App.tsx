@@ -1888,6 +1888,7 @@ function getStatusBadgeStyle(status: string): React.CSSProperties {
 const styles: { [key: string]: React.CSSProperties } = {
   loginPage: {
     minHeight: "100vh",
+    width: "100%",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -1905,14 +1906,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: "column",
     gap: 14,
     boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
-  },
-  loginTitle: {
-    margin: 0,
-    color: "#123b75",
-  },
-  loginSub: {
-    margin: "0 0 8px 0",
-    color: "#5d6f8a",
+    boxSizing: "border-box",
   },
   successBanner: {
     background: "#dcfce7",
@@ -1921,14 +1915,20 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: "10px 14px",
     borderRadius: 10,
     fontWeight: 600,
+    width: "100%",
+    boxSizing: "border-box",
   },
   appShell: {
     minHeight: "100vh",
-    display: "grid",
-    gridTemplateColumns: "300px 1fr",
+    width: "100%",
+    display: "flex",
+    alignItems: "stretch",
     background: "#eef5ff",
+    overflowX: "hidden",
   },
   sidebar: {
+    width: 300,
+    minWidth: 300,
     background: "#0f2f63",
     color: "#ffffff",
     padding: "24px 16px",
@@ -1936,6 +1936,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: "column",
     justifyContent: "space-between",
     gap: 20,
+    boxSizing: "border-box",
+    minHeight: "100vh",
+    position: "sticky",
+    top: 0,
   },
   brandBox: {
     marginBottom: 18,
@@ -1980,23 +1984,30 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: "pointer",
     fontWeight: 600,
     fontSize: 14,
+    width: "100%",
   },
   sidebarButtonActive: {
     background: "#ffffff",
     color: "#123b75",
   },
   main: {
+    flex: 1,
+    width: "100%",
+    minWidth: 0,
     padding: "24px",
     display: "flex",
     flexDirection: "column",
     gap: "24px",
     boxSizing: "border-box",
+    overflowX: "hidden",
   },
   card: {
+    width: "100%",
     background: "#ffffff",
     borderRadius: 20,
     padding: "24px",
     boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+    boxSizing: "border-box",
   },
   cardHeader: {
     display: "flex",
@@ -2013,30 +2024,34 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   formGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
     gap: "16px",
     alignItems: "end",
+    width: "100%",
   },
   filterGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
     gap: "16px",
     marginBottom: 16,
     alignItems: "end",
+    width: "100%",
   },
   fieldWrap: {
     display: "flex",
     flexDirection: "column",
     gap: 8,
+    minWidth: 0,
   },
   label: {
     fontSize: 13,
     fontWeight: 600,
     color: "#34527d",
-    textAlign: "center",
+    textAlign: "left",
   },
   input: {
     width: "100%",
+    minWidth: 0,
     padding: "12px",
     height: "44px",
     borderRadius: 10,
@@ -2049,11 +2064,14 @@ const styles: { [key: string]: React.CSSProperties } = {
   fullRow: {
     gridColumn: "1 / -1",
     display: "flex",
-    justifyContent: "center",
+    justifyContent: "flex-start",
+    flexWrap: "wrap",
+    gap: 12,
   },
   filterAction: {
     display: "flex",
     alignItems: "end",
+    width: "100%",
   },
   primaryButton: {
     background: "#1f6feb",
@@ -2063,7 +2081,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: "10px 16px",
     cursor: "pointer",
     fontWeight: 700,
-    minWidth: 190,
+    minWidth: 160,
+    height: "44px",
   },
   secondaryButton: {
     background: "#ffffff",
@@ -2084,12 +2103,15 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: "12px 14px",
     cursor: "pointer",
     fontWeight: 700,
+    width: "100%",
   },
   tableWrap: {
+    width: "100%",
     overflowX: "auto",
   },
   table: {
     width: "100%",
+    minWidth: 900,
     borderCollapse: "collapse",
   },
   th: {
@@ -2109,6 +2131,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     verticalAlign: "top",
     fontSize: 14,
     textAlign: "center",
+    wordBreak: "break-word",
   },
   badge: {
     display: "inline-block",
@@ -2159,6 +2182,9 @@ const styles: { [key: string]: React.CSSProperties } = {
   calendarExportBox: {
     background: "#ffffff",
     padding: 8,
+    width: "100%",
+    overflowX: "auto",
+    boxSizing: "border-box",
   },
   exportTitle: {
     textAlign: "center",
@@ -2212,6 +2238,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: 16,
     padding: 24,
     boxShadow: "0 20px 50px rgba(0,0,0,0.18)",
+    boxSizing: "border-box",
   },
   modalTitle: {
     marginTop: 0,
