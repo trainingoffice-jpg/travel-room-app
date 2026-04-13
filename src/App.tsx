@@ -988,7 +988,12 @@ useEffect(() => {
         </button>
       </aside>
 
-      <main style={styles.main}>
+      <main
+  style={{
+    ...styles.main,
+    padding: isMobile ? "16px" : "24px",
+  }}
+>
         {successMessage ? <div style={styles.successBanner}>{successMessage}</div> : null}
 
         {activeModule === "travel" && (
