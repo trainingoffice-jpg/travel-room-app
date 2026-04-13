@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useRef, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -1544,7 +1543,7 @@ export default function App() {
                   </datalist>
                 </Field>
 
-                <div style={styles.filterAction}>
+                <div style={styles.fullRow}>
                   <button type="submit" style={styles.primaryButton}>
                     Add Employee
                   </button>
@@ -1615,7 +1614,7 @@ export default function App() {
                   />
                 </Field>
 
-                <div style={styles.filterAction}>
+                <div style={styles.fullRow}>
                   <button type="submit" style={styles.primaryButton}>
                     Add Showroom
                   </button>
@@ -1668,7 +1667,7 @@ export default function App() {
                   />
                 </Field>
 
-                <div style={styles.filterAction}>
+                <div style={styles.fullRow}>
                   <button type="submit" style={styles.primaryButton}>
                     Add Room
                   </button>
@@ -1926,13 +1925,13 @@ const styles: { [key: string]: React.CSSProperties } = {
   appShell: {
     minHeight: "100vh",
     display: "grid",
-    gridTemplateColumns: "260px 1fr",
+    gridTemplateColumns: "300px 1fr",
     background: "#eef5ff",
   },
   sidebar: {
     background: "#0f2f63",
     color: "#ffffff",
-    padding: 20,
+    padding: "24px 16px",
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
@@ -1940,6 +1939,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   brandBox: {
     marginBottom: 18,
+    textAlign: "center",
   },
   brandTitle: {
     fontSize: 24,
@@ -1951,49 +1951,52 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   sideUserBox: {
     background: "rgba(255,255,255,0.12)",
-    borderRadius: 14,
-    padding: 14,
+    borderRadius: 16,
+    padding: 18,
     marginBottom: 18,
+    textAlign: "center",
   },
   sideUserName: {
     fontWeight: 700,
+    fontSize: 18,
   },
   sideUserId: {
     fontSize: 13,
-    opacity: 0.85,
-    marginTop: 4,
+    opacity: 0.9,
+    marginTop: 6,
   },
   navList: {
     display: "flex",
     flexDirection: "column",
-    gap: 10,
+    gap: 12,
   },
   sidebarButton: {
     background: "rgba(255,255,255,0.08)",
     color: "#ffffff",
     border: "1px solid rgba(255,255,255,0.08)",
-    borderRadius: 12,
-    padding: "12px 14px",
+    borderRadius: 14,
+    padding: "14px 18px",
     textAlign: "left",
     cursor: "pointer",
     fontWeight: 600,
+    fontSize: 14,
   },
   sidebarButtonActive: {
     background: "#ffffff",
     color: "#123b75",
   },
   main: {
-    padding: 24,
+    padding: "24px",
     display: "flex",
     flexDirection: "column",
-    gap: 20,
+    gap: "24px",
     boxSizing: "border-box",
   },
   card: {
     background: "#ffffff",
-    borderRadius: 18,
-    padding: 20,
-    boxShadow: "0 12px 30px rgba(15,47,99,0.08)",
+    borderRadius: 20,
+    padding: "24px",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
   },
   cardHeader: {
     display: "flex",
@@ -2001,7 +2004,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     justifyContent: "space-between",
     gap: 12,
     flexWrap: "wrap",
-    marginBottom: 16,
+    marginBottom: 20,
   },
   cardTitle: {
     margin: 0,
@@ -2010,14 +2013,16 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   formGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: 14,
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    gap: "16px",
+    alignItems: "end",
   },
   filterGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: 14,
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    gap: "16px",
     marginBottom: 16,
+    alignItems: "end",
   },
   fieldWrap: {
     display: "flex",
@@ -2028,10 +2033,12 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: 13,
     fontWeight: 600,
     color: "#34527d",
+    textAlign: "center",
   },
   input: {
     width: "100%",
-    padding: "10px 12px",
+    padding: "12px",
+    height: "44px",
     borderRadius: 10,
     border: "1px solid #c7d8f5",
     fontSize: 14,
@@ -2041,6 +2048,8 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   fullRow: {
     gridColumn: "1 / -1",
+    display: "flex",
+    justifyContent: "center",
   },
   filterAction: {
     display: "flex",
@@ -2054,6 +2063,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: "10px 16px",
     cursor: "pointer",
     fontWeight: 700,
+    minWidth: 190,
   },
   secondaryButton: {
     background: "#ffffff",
@@ -2064,6 +2074,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: "pointer",
     fontWeight: 700,
     width: "100%",
+    height: "44px",
   },
   logoutButton: {
     background: "#ffffff",
@@ -2082,20 +2093,22 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderCollapse: "collapse",
   },
   th: {
-    background: "#e8f0ff",
+    background: "#f1f5ff",
     color: "#123b75",
-    textAlign: "left",
-    padding: 12,
+    textAlign: "center",
+    padding: "14px",
     borderBottom: "1px solid #cfe0fb",
     fontSize: 14,
     whiteSpace: "nowrap",
+    fontWeight: 600,
   },
   td: {
-    padding: 12,
-    borderBottom: "1px solid #edf2fb",
+    padding: "14px",
+    borderBottom: "1px solid #eee",
     color: "#334155",
     verticalAlign: "top",
     fontSize: 14,
+    textAlign: "center",
   },
   badge: {
     display: "inline-block",
@@ -2108,6 +2121,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: "flex",
     gap: 8,
     flexWrap: "wrap",
+    justifyContent: "center",
   },
   approveButton: {
     background: "#16a34a",
