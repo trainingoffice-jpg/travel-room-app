@@ -1143,7 +1143,7 @@ useEffect(() => {
                 {visibleTravelEntries.map((item) => (
                   <tr key={item.id}>
                     <td style={styles.td}>{item.employeeName}</td>
-                    <td style={styles.td}>
+                    <td style={{ ...styles.td, whiteSpace: "normal" }}>
                       {item.fromDate} to {item.toDate}
                     </td>
                     <td style={styles.td}>{item.purpose}</td>
@@ -1410,7 +1410,7 @@ useEffect(() => {
                 {visibleRoomBookings.map((item) => (
                   <tr key={item.id}>
                     <td style={styles.td}>{item.employeeName}</td>
-                    <td style={styles.td}>
+                    <td style={{ ...styles.td, whiteSpace: "normal" }}>
                       {item.fromDate} to {item.toDate}
                     </td>
                     <td style={styles.td}>{item.room}</td>
@@ -2154,14 +2154,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: 600,
   },
   td: {
-    padding: "14px",
-    borderBottom: "1px solid #eee",
-    color: "#334155",
-    verticalAlign: "top",
-    fontSize: 14,
-    textAlign: "center",
-    wordBreak: "break-word",
-  },
+  padding: "14px",
+  borderBottom: "1px solid #eee",
+  color: "#334155",
+  verticalAlign: "middle", // FIX
+  fontSize: 14,
+  textAlign: "center",
+  whiteSpace: "nowrap", // FIX (IMPORTANT)
+},
   badge: {
     display: "inline-block",
     padding: "4px 10px",
