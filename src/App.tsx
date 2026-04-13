@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -104,6 +105,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const [activeModule, setActiveModule] = useState<ModuleKey>("travel");
 
@@ -152,8 +154,24 @@ export default function App() {
   const travelCalendarRef = useRef<HTMLDivElement | null>(null);
   const roomCalendarRef = useRef<HTMLDivElement | null>(null);
 
-  const loadAllData = async () => {
-    setIsLoading(true);
+  const showSuccess = (message: string) => {
+    setSuccessMessage(message);
+    window.setTimeout(() => setSuccessMessage(""), 2500);
+  };
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem("portal_user");
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch {
+        localStorage.removeItem("portal_user");
+      }
+    }
+  }, []);
+
+  const loadAllData = async (showLoader = false) => {
+    if (showLoader) setIsLoading(true);
 
     const [employeesRes, showroomsRes, roomsRes, travelRes, bookingsRes] = await Promise.all([
       supabase
@@ -266,11 +284,11 @@ export default function App() {
       );
     }
 
-    setIsLoading(false);
+    if (showLoader) setIsLoading(false);
   };
 
   useEffect(() => {
-    void loadAllData();
+    void loadAllData(true);
   }, []);
 
   const filteredShowroomOptions = useMemo(() => {
@@ -292,11 +310,13 @@ export default function App() {
     setError("");
 
     if (name.trim() === "Rathishthambu" && id.trim() === "landd2026") {
-      setUser({
+      const adminUser = {
         name: "Rathishthambu",
-        role: "Admin",
+        role: "Admin" as const,
         id: "admin",
-      });
+      };
+      setUser(adminUser);
+      localStorage.setItem("portal_user", JSON.stringify(adminUser));
       return;
     }
 
@@ -316,11 +336,14 @@ export default function App() {
       return;
     }
 
-    setUser({
+    const employeeUser = {
       name: matchedEmployee.name,
-      role: "Employee",
+      role: "Employee" as const,
       id: matchedEmployee.id,
-    });
+    };
+
+    setUser(employeeUser);
+    localStorage.setItem("portal_user", JSON.stringify(employeeUser));
   };
 
   const logout = () => {
@@ -331,6 +354,7 @@ export default function App() {
     setActiveModule("travel");
     setTooltip(null);
     setCalendarModal(null);
+    localStorage.removeItem("portal_user");
   };
 
   const handleAddEmployee = async (e: React.FormEvent) => {
@@ -372,8 +396,8 @@ export default function App() {
     setNewEmployeePassword("");
     setNewEmployeeShowroom("");
 
-    await loadAllData();
-    alert("Employee saved to database");
+    await loadAllData(false);
+    showSuccess("Employee saved");
   };
 
   const handleDeleteEmployee = async (employeeId: string) => {
@@ -387,7 +411,8 @@ export default function App() {
       return;
     }
 
-    await loadAllData();
+    await loadAllData(false);
+    showSuccess("Employee deleted");
   };
 
   const handleAddShowroom = async (e: React.FormEvent) => {
@@ -417,8 +442,8 @@ export default function App() {
     }
 
     setNewShowroom("");
-    await loadAllData();
-    alert("Showroom saved to database.");
+    await loadAllData(false);
+    showSuccess("Showroom saved");
   };
 
   const handleDeleteShowroom = async (showroom: string) => {
@@ -432,7 +457,8 @@ export default function App() {
       return;
     }
 
-    await loadAllData();
+    await loadAllData(false);
+    showSuccess("Showroom deleted");
   };
 
   const handleAddRoom = async (e: React.FormEvent) => {
@@ -462,8 +488,8 @@ export default function App() {
     }
 
     setNewRoomName("");
-    await loadAllData();
-    alert("Room saved to database.");
+    await loadAllData(false);
+    showSuccess("Room saved");
   };
 
   const handleDeleteRoom = async (roomId: string) => {
@@ -480,7 +506,8 @@ export default function App() {
       return;
     }
 
-    await loadAllData();
+    await loadAllData(false);
+    showSuccess("Room deleted");
   };
 
   const handleShowroomExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -533,8 +560,8 @@ export default function App() {
         return;
       }
 
-      await loadAllData();
-      alert(`Uploaded ${uniqueValues.length} showroom location(s) to database.`);
+      await loadAllData(false);
+      showSuccess("Showroom Excel uploaded");
     };
 
     reader.readAsArrayBuffer(file);
@@ -579,8 +606,8 @@ export default function App() {
     setTravelNeeded("Yes");
     setAccommodationNeeded("No");
 
-    await loadAllData();
-    alert("Travel request submitted for admin approval.");
+    await loadAllData(false);
+    showSuccess("Travel request submitted");
   };
 
   const handleRoomSubmit = async (e: React.FormEvent) => {
@@ -626,8 +653,8 @@ export default function App() {
     setRoomRemarks("");
     setRoomShowroom("");
 
-    await loadAllData();
-    alert("Room booking submitted for admin approval.");
+    await loadAllData(false);
+    showSuccess("Room booking submitted");
   };
 
   const visibleTravelEntries = useMemo(() => {
@@ -785,6 +812,7 @@ export default function App() {
     setTravelEntries((prev) =>
       prev.map((item) => (item.id === entryId ? { ...item, status } : item))
     );
+    showSuccess("Travel status updated");
   };
 
   const updateRoomStatus = async (entryId: number, status: RoomStatus) => {
@@ -801,6 +829,7 @@ export default function App() {
     setRoomBookings((prev) =>
       prev.map((item) => (item.id === entryId ? { ...item, status } : item))
     );
+    showSuccess("Room status updated");
   };
 
   const downloadCalendarPdf = async (
@@ -940,6 +969,8 @@ export default function App() {
       </aside>
 
       <main style={styles.main}>
+        {successMessage ? <div style={styles.successBanner}>{successMessage}</div> : null}
+
         {activeModule === "travel" && (
           <>
             <SectionCard title="Travel Planner">
@@ -1883,6 +1914,14 @@ const styles: { [key: string]: React.CSSProperties } = {
   loginSub: {
     margin: "0 0 8px 0",
     color: "#5d6f8a",
+  },
+  successBanner: {
+    background: "#dcfce7",
+    color: "#166534",
+    border: "1px solid #86efac",
+    padding: "10px 14px",
+    borderRadius: 10,
+    fontWeight: 600,
   },
   appShell: {
     minHeight: "100vh",
