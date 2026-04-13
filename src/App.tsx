@@ -106,6 +106,14 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState("");
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+
+useEffect(() => {
+  const onResize = () => setIsMobile(window.innerWidth < 1024);
+  window.addEventListener("resize", onResize);
+  return () => window.removeEventListener("resize", onResize);
+}, []);
+
   const [activeModule, setActiveModule] = useState<ModuleKey>("travel");
 
   const [employees, setEmployees] = useState<EmployeeRecord[]>([]);
